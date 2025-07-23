@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Istanbul AI Travel Planner</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .form-container {
+            padding: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 0.95rem;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e1e8ed;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .interest-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .interest-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .interest-item:hover {
+            background: #e9ecef;
+            transform: translateY(-1px);
+        }
+
+        .interest-item input[type="checkbox"] {
+            width: auto;
+            margin-right: 8px;
+            accent-color: #667eea;
+        }
+
+        .budget-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .budget-option {
+            text-align: center;
+            padding: 20px;
+            border: 2px solid #e1e8ed;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .budget-option:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .budget-option.selected {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .budget-symbol {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .budget-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .generate-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .generate-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .result {
+            display: none;
+            margin-top: 40px;
+            padding: 30px;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 15px;
+            border-left: 5px solid #667eea;
+        }
+
+        .result h3 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .result-content {
+            line-height: 1.6;
+            color: #555;
+            white-space: pre-wrap;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .budget-options {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .container {
+                margin: 10px;
+            }
+
+            .header, .form-container {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🕌 Istanbul AI Travel Planner</h1>
+            <p>Plan your perfect Istanbul experience with AI-powered personalized recommendations</p>
+        </div>
+
+        <div class="form-container">
+            <form id="travelForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="startDate">Start Date</label>
+                        <input type="date" id="startDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="endDate">End Date</label>
+                        <input type="date" id="endDate" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="startingPoint">Starting Point in Istanbul</label>
+                        <select id="startingPoint" required>
+                            <option value="">Select your starting point</option>
+                            <option value="sultanahmet">Sultanahmet (Historic Peninsula)</option>
+                            <option value="taksim">Taksim / Beyoğlu</option>
+                            <option value="besiktas">Beşiktaş</option>
+                            <option value="kadikoy">Kadıköy (Asian Side)</option>
+                            <option value="uskudar">Üsküdar</option>
+                            <option value="sisli">Şişli / Mecidiyeköy</option>
+                            <option value="levent">Levent / Maslak</option>
+                            <option value="bakirkoy">Bakırköy</option>
+                            <option value="fatih">Fatih</option>
+                            <option value="beylikduzu">Beylikdüzü</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="groupSize">Group Size</label>
+                        <select id="groupSize" required>
+                            <option value="">Select group size</option>
+                            <option value="solo">Solo Traveler</option>
+                            <option value="couple">Couple (2 people)</option>
+                            <option value="small">Small Group (3-5 people)</option>
+                            <option value="large">Large Group (6+ people)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Your Interests (Select all that apply)</label>
+                    <div class="interest-grid">
+                        <div class="interest-item">
+                            <input type="checkbox" id="history" name="interests" value="history">
+                            <label for="history">🏛️ History & Culture</label>
+                        </div>
+                        <div class="interest-item">
+                            <input type="checkbox" id="cuisine" name="interests" value="cuisine">
+                            <label for="cuisine">🍜 Turkish Cuisine</label>
+                        </div>
+                        <div class="interest-item">
+                            <input type="checkbox" id="shopping" name="interests" value="shopping">
+                            <label for="shopping">🛍️ Shopping</label>
+                        </div>
+                        <div class="interest-item">
+                            <input type="checkbox" id="bosphorus" name="interests" value="bosphorus">
+                            <label for="bosphorus">🚢 Bosphorus Tours</label>
+                        </div>
+                        <div class="interest-item">
+                            <input type="checkbox" id="nightlife" name="interests" value="nightlife">
+                            <label for="nightlife">🌙 Nightlife</label>
+                        </div>
+                        <div class="interest-item">
+                            <input type="checkbox" id="hamam" name="interests" value="hamam">
+                            <label for="hamam">🧖‍♀️ Turkish Bath & Spa</label>
+                        </div>
+                        <div class="interest-item">
+                            <input type="checkbox" id="art" name="interests" value="art">
+                            <label for="art">🎨 Art & Museums</label>
+                        </div>
+                        <div class="interest-item">
+                            <input type="checkbox" id="markets" name="interests" value="markets">
+                            <label for="markets">🏪 Bazaars & Markets</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Budget Range</label>
+                    <div class="budget-options">
+                        <div class="budget-option" data-budget="budget">
+                            <div class="budget-symbol">$</div>
+                            <div class="budget-label">Budget Friendly</div>
+                        </div>
+                        <div class="budget-option" data-budget="moderate">
+                            <div class="budget-symbol">$$</div>
+                            <div class="budget-label">Moderate</div>
+                        </div>
+                        <div class="budget-option" data-budget="luxury">
+                            <div class="budget-symbol">$$$</div>
+                            <div class="budget-label">Luxury</div>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="generate-btn">Generate My Istanbul Travel Plan ✨</button>
+            </form>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Creating your personalized Istanbul travel plan...</p>
+            </div>
+
+            <div class="result" id="result">
+                <h3>Your Istanbul Travel Plan</h3>
+                <div class="result-content" id="resultContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Istanbul AI Travel Planner
+        // Demo Version - Replace with actual OpenAI API integration for production
+        
+        // Set minimum date to today
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('startDate').min = today;
+        
+        // Update end date minimum when start date changes
+        document.getElementById('startDate').addEventListener('change', function() {
+            document.getElementById('endDate').min = this.value;
+        });
+
+        // Budget selection handling
+        const budgetOptions = document.querySelectorAll('.budget-option');
+        let selectedBudget = '';
+
+        budgetOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                budgetOptions.forEach(opt => opt.classList.remove('selected'));
+                this.classList.add('selected');
+                selectedBudget = this.dataset.budget;
+            });
+        });
+
+        // Form submission
+        document.getElementById('travelForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (!selectedBudget) {
+                alert('Please select a budget range');
+                return;
+            }
+
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const startingPoint = document.getElementById('startingPoint').value;
+            const groupSize = document.getElementById('groupSize').value;
+            
+            const interests = [];
+            document.querySelectorAll('input[name="interests"]:checked').forEach(checkbox => {
+                interests.push(checkbox.value);
+            });
+
+            if (!startDate || !endDate || !startingPoint || !groupSize) {
+                alert('Please fill in all required fields');
+                return;
+            }
+
+            // Calculate trip duration
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            const duration = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+
+            if (duration <= 0) {
+                alert('End date must be after start date');
+                return;
+            }
+
+            // Show loading animation
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('result').style.display = 'none';
+            this.style.display = 'none';
+
+            // DEMO VERSION: Replace this with actual OpenAI API call
+            // For production, implement: 
+            // 1. Backend API endpoint to securely handle OpenAI requests
+            // 2. Environment variables for API keys
+            // 3. Error handling for API failures
+            setTimeout(() => {
+                const istanbulPlan = generateIstanbulPlan(startingPoint, duration, groupSize, interests, selectedBudget, startDate, endDate);
+                
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('result').style.display = 'block';
+                document.getElementById('resultContent').textContent = istanbulPlan;
+                document.getElementById('travelForm').style.display = 'block';
+            }, 2000);
+        });
+
+        function generateIstanbulPlan(startingPoint, duration, groupSize, interests, budget, startDate, endDate) {
+            // DEMO IMPLEMENTATION
+            // In production, this would be replaced with actual OpenAI API integration
+            
+            const startingPointNames = {
+                'sultanahmet': 'Sultanahmet (Historic Peninsula)',
+                'taksim': 'Taksim / Beyoğlu',
+                'besiktas': 'Beşiktaş',
+                'kadikoy': 'Kadıköy (Asian Side)',
+                'uskudar': 'Üsküdar',
+                'sisli': 'Şişli / Mecidiyeköy',
+                'levent': 'Levent / Maslak',
+                'bakirkoy': 'Bakırköy',
+                'fatih': 'Fatih',
+                'beylikduzu': 'Beylikdüzü'
+            };
+
+            const groupSizeNames = {
+                'solo': 'Solo Traveler',
+                'couple': 'Couple',
+                'small': 'Small Group',
+                'large': 'Large Group'
+            };
+
+            const budgetNames = {
+                'budget': 'Budget Friendly',
+                'moderate': 'Moderate',
+                'luxury': 'Luxury'
+            };
+
+            const interestNames = {
+                'history': 'History & Culture',
+                'cuisine': 'Turkish Cuisine',
+                'shopping': 'Shopping',
+                'bosphorus': 'Bosphorus Tours',
+                'nightlife': 'Nightlife',
+                'hamam': 'Turkish Bath & Spa',
+                'art': 'Art & Museums',
+                'markets': 'Bazaars & Markets'
+            };
+
+            let plan = `🕌 ISTANBUL TRAVEL PLAN 🕌
+⚠️  DEMO VERSION - For production, integrate with OpenAI API
+
+📅 TRIP DETAILS
+• Starting Point: ${startingPointNames[startingPoint]}
+• Duration: ${duration} days (${startDate} to ${endDate})
+• Group: ${groupSizeNames[groupSize]}
+• Budget: ${budgetNames[budget]}
+• Interests: ${interests.map(i => interestNames[i]).join(', ')}
+
+📋 DAILY ITINERARY
+
+`;
+
+            // Day 1 - Based on starting point
+            plan += `🌅 DAY 1: Arrival & ${startingPointNames[startingPoint]} Exploration\n`;
+            
+            if (startingPoint === 'sultanahmet') {
+                plan += `• Morning: Hagia Sophia visit\n• Lunch: Blue Mosque (Sultan Ahmed Mosque)\n• Evening: Topkapi Palace\n`;
+            } else if (startingPoint === 'taksim') {
+                plan += `• Morning: Istiklal Street walking tour\n• Lunch: Galata Tower\n• Evening: Karaköy and Galata exploration\n`;
+            } else if (startingPoint === 'kadikoy') {
+                plan += `• Morning: Kadıköy market area\n• Lunch: Moda waterfront\n• Evening: Bahariye Street\n`;
+            } else {
+                plan += `• Morning: Local area exploration and traditional breakfast\n• Lunch: Nearby attractions\n• Evening: Local restaurants\n`;
+            }
+
+            if (interests.includes('cuisine')) {
+                plan += `• Food Recommendation: Traditional Turkish breakfast\n`;
+            }
+            
+            plan += `• Estimated Cost: ${budget === 'budget' ? '$15-25' : budget === 'moderate' ? '$30-45' : '$60-90'}\n\n`;
+
+            // Day 2
+            if (duration > 1) {
+                plan += `🏛️ DAY 2: Historic Peninsula\n`;
+                if (interests.includes('history')) {
+                    plan += `• Morning: Grand Bazaar exploration\n• Lunch: Basilica Cistern (Underground Cistern)\n• Evening: Eminönü and Galata Bridge\n`;
+                }
+                if (interests.includes('markets')) {
+                    plan += `• Spice Bazaar (Egyptian Bazaar) visit\n`;
+                }
+                if (interests.includes('bosphorus')) {
+                    plan += `• Evening: Short Bosphorus cruise\n`;
+                }
+                plan += `• Estimated Cost: ${budget === 'budget' ? '$18-30' : budget === 'moderate' ? '$35-55' : '$70-105'}\n\n`;
+            }
+
+            // Day 3
+            if (duration > 2) {
+                plan += `🚢 DAY 3: Bosphorus & Asian Side\n`;
+                if (interests.includes('bosphorus')) {
+                    plan += `• Morning: Full Bosphorus cruise\n• Lunch: Üsküdar exploration\n`;
+                }
+                if (interests.includes('art')) {
+                    plan += `• Afternoon: Modern art museums\n`;
+                }
+                if (interests.includes('hamam')) {
+                    plan += `• Evening: Traditional Turkish bath experience\n`;
+                }
+                plan += `• Estimated Cost: ${budget === 'budget' ? '$25-40' : budget === 'moderate' ? '$50-75' : '$90-140'}\n\n`;
+            }
+
+            // Day 4+
+            if (duration > 3) {
+                plan += `🛍️ DAY 4: Shopping & Modern Istanbul\n`;
+                if (interests.includes('shopping')) {
+                    plan += `• Morning: Nişantaşı or İstinye Park\n• Lunch: Zorlu Center\n`;
+                }
+                if (interests.includes('nightlife')) {
+                    plan += `• Evening: Beyoğlu nightlife\n`;
+                }
+                plan += `• Estimated Cost: ${budget === 'budget' ? '$20-35' : budget === 'moderate' ? '$40-65' : '$80-150'}\n\n`;
+            }
+
+            // Accommodation recommendations
+            plan += `🏨 ACCOMMODATION RECOMMENDATIONS\n`;
+            if (budget === 'budget') {
+                plan += `• Hostels or budget hotels ($15-35/night)\n• Sultanahmet or Taksim area budget options\n• Airbnb apartments\n`;
+            } else if (budget === 'moderate') {
+                plan += `• Mid-range hotels ($40-80/night)\n• Boutique hotels in Galata, Karaköy or Beyoğlu\n• Well-located 4-star hotels\n`;
+            } else {
+                plan += `• Luxury hotels ($120-300+/night)\n• Bosphorus view 5-star hotels\n• Premium properties like Four Seasons, Çırağan Palace\n`;
+            }
+
+            // Food recommendations
+            plan += `\n🍽️ FOOD RECOMMENDATIONS\n`;
+            plan += `• Breakfast: Van Breakfast House, Pandeli\n• Lunch: Hamdi Restaurant (Meat), Karaköy Lokantası\n• Dinner: Sunset Grill (Luxury), Balıkçı Sabahattin\n• Street Food: Fish sandwich, döner, simit\n• Dessert: Koska, Hacı Bekir Turkish delight\n`;
+
+            // Transportation
+            plan += `\n🚌 TRANSPORTATION\n• Get an İstanbulkart (all public transport)\n• Metro, tram, bus network is extensive\n• Taxi/Uber alternatives available\n• Ferry (ideal for Bosphorus crossings)\n• Dolmuş (shared taxi for local experience)\n`;
+
+            // Total cost estimate
+            plan += `\n💰 ESTIMATED TOTAL COST (per person)\n`;
+            const baseCost = budget === 'budget' ? 40 : budget === 'moderate' ? 80 : 150;
+            const dailyCost = budget === 'budget' ? 20 : budget === 'moderate' ? 40 : 80;
+            const totalMin = baseCost + (duration - 1) * dailyCost;
+            const totalMax = Math.round(totalMin * 1.4);
+            plan += `$${totalMin} - $${totalMax} (including accommodation)\n`;
+
+            // Practical tips
+            plan += `\n🎒 PRACTICAL TIPS\n• Best visiting time: Spring and autumn\n• Restaurant hours may change during Ramadan\n• Mosques are crowded during Friday prayers\n• Museums are closed on Mondays\n• Tipping 10-15% is normal\n• Dress modestly when visiting mosques\n• Learn basic Turkish phrases\n\n`;
+
+            plan += `Have an amazing time in Istanbul! 🌟
+
+---
+💻 DEVELOPER NOTE: This is a demo version with template responses.
+🔧 For production: Integrate with OpenAI API for real AI-generated plans.
+📧 Contact: [Your GitHub/Email] for implementation details.`;
+
+            return plan;
+        }
+    </script>
+</body>
+</html>
